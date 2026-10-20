@@ -164,7 +164,7 @@ docker run --rm -p 3000:3000 --env-file .env neon-ecology
 - 在平台环境变量中配置与方案 A 相同的变量；
 - 绑定平台生成的固定域名，之后每次 push 自动更新同一域名。
 
-Docker 运行阶段的依赖只包含生产依赖；`tsx` 已经在 `dependencies` 中，因此服务端可以直接运行 TypeScript。
+Docker 运行阶段只复制 `dist/` 和 `dist-server/`。生产构建会用 esbuild 把 Express 服务编译为 `dist-server/index.js`，因此容器运行时不需要 `tsx`、TypeScript 或源码。
 
 ---
 
@@ -242,6 +242,8 @@ npx cloudflared tunnel --url http://127.0.0.1:3000
 | 免费实例首次加载很慢 | Render 免费实例休眠唤醒，等待几十秒；或升级实例 |
 | 部署后本地存档加载失败 | schema 版本已变化；在本地先导出 JSON，再在游戏中导入 |
 | 端口冲突/平台要求 PORT | 平台会注入 `PORT`，服务端会自动读取；不要写死 3000 |
+| Docker 构建成功但 `Exited with status 128` | 先点 **Manual Deploy → Clear build cache & deploy**；仍失败时在 Logs 查看容器输出。本项目现已改为启动编译后的 `node dist-server/index.js` 并显式监听 `0.0.0.0`，请确保部署的是包含该修复的最新 commit |
+| Docker 启动失败且没有应用日志 | 检查 Dockerfile Path 是否为 `Dockerfile`、Docker Command 是否留空、Health Check Path 是否为 `/api/status`；必要时临时切换到 Node runtime |
 
 ---
 

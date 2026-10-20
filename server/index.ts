@@ -23,10 +23,12 @@ function startServer(): void {
   });
   const app = createApp({ config, logger: (message) => console.log(message) });
 
-  const server = app.listen(config.port, () => {
+  // Render (and most containers) route IPv4 traffic to the container. Node's
+  // host-less listen can bind IPv6-only in some environments, so be explicit.
+  const server = app.listen(config.port, "0.0.0.0", () => {
     const address = server.address();
     const port = typeof address === "object" && address !== null ? address.port : config.port;
-    console.log(`NEON//ECOLOGY 服务端已启动：http://127.0.0.1:${port}`);
+    console.log(`NEON//ECOLOGY 服务端已启动：http://0.0.0.0:${port}`);
     console.log(
       isAiAvailable(config)
         ? `AI 顾问：在线（模型 ${config.deepseekModel}，每小时上限 ${config.aiMaxRequestsPerHour} 次）`
