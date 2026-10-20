@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d14">
+  <title>NEON//ECOLOGY — 霓虹生态箱</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">N<span>//</span>E</div>
+      <div><div class="brand-title">NEON<span>//</span>ECOLOGY</div><div class="brand-sub">城市生态观察系统 <span class="tiny-dot"></span> SIMULATION BUILD 0.1</div></div>
+    </div>
+    <div class="top-status">
+      <div class="day-readout"><span class="muted">SIM DAY</span><strong id="dayLabel">01</strong></div>
+      <span id="modeBadge" class="mode-badge offline">● 离线模拟</span>
+      <button id="pauseBtn" class="button button-quiet">Ⅱ 暂停</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="main-column">
+      <div class="section-heading">
+        <div><div class="eyebrow">01 / CITY FEED</div><h1>城市观测窗</h1></div>
+        <div class="live-tag"><span class="pulse"></span> LIVE SIMULATION</div>
+      </div>
+
+      <section class="city-panel panel">
+        <div class="panel-topline"><span>SECTOR MAP / 霓虹湾第七码头</span><span id="cityWeather">酸雨预警 · 低强度</span></div>
+        <div class="city-scene" id="cityScene" aria-label="赛博朋克城市示意图">
+          <div class="moon"></div><div class="skyline skyline-back"></div><div class="skyline skyline-front"></div>
+          <div class="tower tower-a"><span>NEO CORP</span></div><div class="tower tower-b"><span>SECTOR 07</span></div><div class="tower tower-c"><span>NO SIGNAL</span></div>
+          <div class="street"></div><div class="street-glow"></div>
+          <div class="map-pin pin-a">CORP<span>企业区</span></div><div class="map-pin pin-b">FREE<span>自治社区</span></div><div class="map-pin pin-c">VOID<span>地下网络</span></div>
+          <div class="city-caption"><span>霓虹湾 / NIGHT DISTRICT</span><span id="cityPopulation">居民 10 / 10</span></div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric-card"><div class="metric-label">城市稳定度 <span>STABILITY</span></div><div class="metric-value"><strong id="stabilityValue">68</strong><small>/100</small></div><div class="meter"><i id="stabilityBar" style="width:68%"></i></div></div>
+          <div class="metric-card"><div class="metric-label">环境污染 <span>POLLUTION</span></div><div class="metric-value"><strong id="pollutionValue">42</strong><small>/100</small></div><div class="meter meter-pink"><i id="pollutionBar" style="width:42%"></i></div></div>
+          <div class="metric-card"><div class="metric-label">公众信任 <span>PUBLIC TRUST</span></div><div class="metric-value"><strong id="trustValue">51</strong><small>/100</small></div><div class="meter meter-purple"><i id="trustBar" style="width:51%"></i></div></div>
+        </div>
+      </section>
+
+      <section class="panel resource-panel">
+        <div class="panel-heading"><div><div class="eyebrow">02 / SHARED RESOURCES</div><h2>城市资源池</h2></div><span class="panel-note">系统总量 · 单位 / u</span></div>
+        <div class="resource-grid">
+          <div class="resource-item"><div class="resource-icon icon-money">₡</div><div><span>信用点</span><strong id="moneyValue">420</strong></div><small>CR</small></div>
+          <div class="resource-item"><div class="resource-icon icon-food">▤</div><div><span>食物储备</span><strong id="foodValue">180</strong></div><small>FOOD</small></div>
+          <div class="resource-item"><div class="resource-icon icon-energy">ϟ</div><div><span>能源配额</span><strong id="energyValue">210</strong></div><small>ENERGY</small></div>
+          <div class="resource-item"><div class="resource-icon icon-meds">✚</div><div><span>医疗物资</span><strong id="medsValue">64</strong></div><small>MED</small></div>
+        </div>
+      </section>
+
+      <section class="panel event-panel">
+        <div class="panel-heading"><div><div class="eyebrow">03 / OBSERVATION LOG</div><h2>城市事件流</h2></div><span class="panel-note" id="eventCount">0 EVENTS</span></div>
+        <div class="event-list" id="eventList" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <aside class="side-column">
+      <section class="panel control-panel">
+        <div class="eyebrow">CONTROL / 观测控制</div><h2>推进模拟</h2>
+        <p class="subtext">让城市自行演化，观察每个选择带来的连锁反应。</p>
+        <button id="nextDayBtn" class="button button-primary"><span>▶</span> 推进一天 <kbd>SPACE</kbd></button>
+        <button id="autoBtn" class="button button-secondary"><span>⟳</span> 连续模拟 <small>每 2.2 秒</small></button>
+        <div class="button-row"><button id="saveBtn" class="button button-outline">保存快照</button><button id="loadBtn" class="button button-outline">读取存档</button></div>
+        <button id="injectBtn" class="button button-event">＋ 注入城市事件</button>
+        <div class="control-foot"><span class="status-led"></span><span id="saveStatus">本地存档已就绪</span></div>
+      </section>
+
+      <section class="panel faction-panel">
+        <div class="panel-heading"><div><div class="eyebrow">04 / POWER STRUCTURE</div><h2>势力动态</h2></div><span class="panel-note">影响力</span></div>
+        <div id="factionList" class="faction-list"></div>
+      </section>
+
+      <section class="panel residents-panel">
+        <div class="panel-heading"><div><div class="eyebrow">05 / CITIZEN ARCHIVE</div><h2>居民档案</h2></div><span class="panel-note" id="residentCount">10 ACTIVE</span></div>
+        <div id="residentList" class="resident-list"></div>
+        <div id="residentDetail" class="resident-detail"><div class="detail-placeholder">选择一名居民，查看其目标、性格与近期记忆。</div></div>
+      </section>
+      <section class="panel settings-panel">
+        <div class="panel-heading"><div><div class="eyebrow">06 / SYSTEM</div><h2>系统设置</h2></div></div>
+        <label class="toggle-line"><span>允许 AI 行动提案<small>在线时每回合最多请求一次</small></span><input id="aiToggle" type="checkbox" checked><i></i></label>
+        <label class="toggle-line"><span>显示详细行动日志<small>展示被校验与执行的行动</small></span><input id="detailToggle" type="checkbox" checked><i></i></label>
+        <button id="resetBtn" class="button button-danger">重置世界</button>
+      </section>
+    </aside>
+  </main>
+  <footer><span>NEON//ECOLOGY</span><span>世界状态由模拟引擎维护 · AI 仅提供行动提案</span><span id="footerMode">LOCAL ENGINE READY</span></footer>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
