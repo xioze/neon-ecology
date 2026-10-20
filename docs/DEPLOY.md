@@ -37,18 +37,24 @@ git push -u origin main
 
 登录 [Render Dashboard](https://dashboard.render.com/) → **New +** → **Web Service** → 连接刚创建的 GitHub 仓库。
 
+因为仓库里有 `Dockerfile`，Render 通常会把 Language 自动选成 **Docker**。**保持 Docker 即可**，不需要改成 Node；Docker 字段会自动使用仓库根目录的构建配置，原先的 Build Command / Start Command 字段不会出现。
+
 | 配置项 | 值 |
 | --- | --- |
-| Name | `neon-ecology`（决定默认域名，可能被占用） |
-| Language | Node |
+| Name | `neon-ecology`（决定默认域名；被占用时可用 `neon-ecology-xioze`） |
+| Language | **Docker**（保留自动检测结果） |
 | Branch | `main` |
 | Root Directory | 留空 |
-| Region | Singapore（离国内较近；也可选 Oregon / Frankfurt） |
-| Build Command | `npm ci --include=dev && npm run build` |
-| Start Command | `npm run serve` |
+| Region | Singapore（如果该区域支持 Free 套餐；否则 Oregon 也可以） |
+| Docker Build Context Directory | `.`（仓库根目录） |
+| Dockerfile Path | `Dockerfile`（若当前显示的是 `.`，改为 `Dockerfile` 或 `./Dockerfile`） |
+| Docker Command | 留空（使用 Dockerfile 内 CMD） |
+| Pre-Deploy Command | 留空 |
 | Health Check Path | `/api/status` |
 | Instance Type | Free（免费实例闲置会休眠，首次访问可能需等待唤醒） |
-| Auto-Deploy | Yes（如果可选，选择 **After CI Checks Pass**） |
+| Auto-Deploy | On Commit（如果可选，选择 **After CI Checks Pass**） |
+
+> 如果你更想用 Render 的 Node runtime 而不是 Docker：Language 改成 `Node`，Build Command 填 `npm ci --include=dev && npm run build`，Start Command 填 `npm run serve`。两种方式都可以，本仓库已经同时支持。
 
 创建后，Render 会给一个固定 URL，通常形如：
 
@@ -245,8 +251,10 @@ npx cloudflared tunnel --url http://127.0.0.1:3000
 1. 创建 GitHub 空仓库
 2. git remote add origin ... && git branch -M main && git push -u origin main
 3. Render: New Web Service → 连接仓库
-4. Build: npm ci --include=dev && npm run build
-   Start: npm run serve
+   Language 保持 Docker；Context=.；Dockerfile=Dockerfile；Health=/api/status
+   （或 Language=Node：Build `npm ci --include=dev && npm run build`，
+     Start `npm run serve`）
+4. Instance Type 选 Free；Auto-Deploy 保持 On Commit
 5. 环境变量填 DEEPSEEK_API_KEY 等（不提交 .env）
 6. 打开 Render 生成的固定域名，分享这个链接
 7. 以后 git push → 自动部署 → 同一链接使用最新代码

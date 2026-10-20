@@ -20,8 +20,9 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server ./server
 COPY --from=build /app/src ./src
-RUN useradd --system --create-home --uid 10001 neon \
-    && chown -R neon:neon /app
-USER neon
+# The official Node image ships a non-root `node` user; don't rely on
+# useradd being present in the slim base image.
+RUN chown -R node:node /app
+USER node
 EXPOSE 3000
 CMD ["npm", "run", "serve"]
