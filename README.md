@@ -32,6 +32,8 @@ npm start
 
 它会先构建前端（`dist/`），然后由 Express 在 **http://localhost:3000** 同时提供界面和 API。
 
+想发给别人、使用固定链接并让未来提交自动上线，请看 **[部署与分享文档](docs/DEPLOY.md)**。推荐 **GitHub + Render**：固定 `onrender.com` 域名，`git push` 后平台自动构建，同一链接自动使用最新版本。
+
 > 旧版原型（原生 JS + CSS 地图）已完整保留在 `archive/v0-prototype/`，未删除。当前版本在其愿景基础上重写为可交互 3D 模拟沙盒。
 
 ## 2. 离线运行与 DeepSeek
@@ -104,15 +106,21 @@ AI 的职责边界：
 
 ```text
 neon-ecology/
-├── index.html                 # Vite HTML 入口
+├── index.html                 # Vite HTML 入口（SEO / 分享预览 / favicon）
 ├── package.json
 ├── vite.config.ts             # Vite + React + /api 代理
 ├── tsconfig.json              # 前端/共享类型检查
 ├── tsconfig.server.json       # 服务端/测试类型检查
+├── Dockerfile                 # Render/Railway/Zeabur/Fly 部署镜像
+├── .dockerignore
+├── .nvmrc
+├── .github/workflows/ci.yml   # push/PR 自动类型检查、测试、构建
 ├── .env.example               # 环境变量模板（无真实 Key）
+├── public/favicon.svg
 ├── docs/
 │   ├── ARCHITECTURE.md        # 数据流、更新顺序、边界与 AI 安全设计
-│   └── CONTRACTS.md           # 并行开发模块契约
+│   ├── CONTRACTS.md           # 并行开发模块契约
+│   └── DEPLOY.md              # 固定链接部署、自动更新、安全清单
 ├── src/
 │   ├── shared/
 │   │   ├── types.ts           # 领域模型（唯一权威类型）
@@ -164,6 +172,7 @@ neon-ecology/
 - 3D 层只读取 `SimulationUiState`，只调用 store 的公开动作；不会直接修改世界规则或居民数据。
 - AI 调用不在渲染循环、也不在引擎内部。store 在每 `aiAdvisorFrequencyTicks` 个 tick 后（或玩家手动请求）发起一次，过程中居民继续用本地规则生活。
 - 高开销编辑操作（拆除、删除、重置、恢复快照）必须二次确认；所有输入在进入引擎前校验，非法值被拒绝并展示中文错误。
+- 部署层使用固定域名的 Node 服务；服务端对 HTML 入口返回 `no-cache`，确保每次发布后刷新页面即可拿到最新代码。构建产物带 hash，可以长期缓存。
 
 更详细的数据流与安全设计见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -258,3 +267,26 @@ npm run test:browser       # Playwright-core，使用本机 Chrome，不下载�
 - 服务端拒绝超过限制的请求体、未知字段和非法 schema；模型输出不执行代码、不插入 HTML。
 - 前端所有模型文本通过 React 渲染转义，没有 `dangerouslySetInnerHTML`、`eval` 或动态脚本执行。
 - `.env` 已在 `.gitignore` 中；不要提交真实密钥。
+
+## 11. 部署为固定链接 / 分享
+
+完整步骤、环境变量、自动更新、自定义域名、Docker 方案与排错请见 **[docs/DEPLOY.md](docs/DEPLOY.md)**。
+
+最短路径（GitHub + Render）：
+
+1. 创建 GitHub 空仓库，把当前仓库推送到 `main`；
+2. Render → New Web Service → 连接仓库；
+3. Build Command：`npm ci --include=dev && npm run build`；
+4. Start Command：`npm run serve`；
+5. 在平台 Environment 填 `DEEPSEEK_API_KEY`（不要提交 `.env`）；
+6. 打开 Render 生成的固定域名并分享。
+
+以后每次 `git push` 到 `main`，平台自动重新构建，**同一个链接**会使用最新代码。仓库里的 [CI workflow](.github/workflows/ci.yml) 会先跑类型检查、测试和构建，可在 Render 选择 “After CI Checks Pass” 防止坏代码上线。
+
+注意：
+
+- DeepSeek Key 只能放服务端环境变量，不能把带 Key 的静态页面放 GitHub Pages；
+- 每个访客的存档在自己的浏览器 `localStorage` 中，分享链接不会共享同一个世界；
+- 公网发布后 AI 调用会消耗你的额度，服务端已有限流；预算敏感时设置 `AI_ENABLED=false` 或调低 `AI_MAX_REQUESTS_PER_HOUR`；
+- 免费 Render 实例闲置会休眠，首次打开可能较慢；
+- 当前项目没有 Cloudflare/Vercel Serverless 配置，是因为本方案优先保持现有 Express 代码不变。

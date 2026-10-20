@@ -87,6 +87,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
     }
     const indexHtml = path.join(staticDir, "index.html");
     if (existsSync(indexHtml)) {
+      // A deployment must serve the newest HTML after each release. Hashed
+      // Vite assets under /assets can still be cached normally.
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.sendFile(indexHtml);
       return;
     }
